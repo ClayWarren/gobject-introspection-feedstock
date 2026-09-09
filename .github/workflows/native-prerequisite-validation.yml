@@ -78,7 +78,7 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path native-results -Force | Out-Null
-          $paths = @('C:\gi-output\${{ matrix.subdir }}\*.conda', 'C:\gi-local\${{ matrix.subdir }}\winflexbison-*.conda')
+          $paths = @('C:\gi-output\${{ matrix.subdir }}\*.conda', 'C:\gi-output\broken\*.conda', 'C:\gi-build\broken\*.conda', 'C:\gi-local\${{ matrix.subdir }}\winflexbison-*.conda')
           foreach ($path in $paths) {
             Get-ChildItem $path -ErrorAction SilentlyContinue | Copy-Item -Destination native-results
           }
