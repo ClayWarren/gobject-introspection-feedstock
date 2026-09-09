@@ -20,6 +20,13 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+      - name: Check out exact existing native winflexbison PR
+        if: matrix.subdir == 'win-arm64'
+        uses: actions/checkout@v4
+        with:
+          repository: jjerphan/winflexbison-feedstock
+          ref: aa4190bed07d5c5029205c4d0b40a395db1edb0b
+          path: prerequisites/winflexbison
       - name: Attest runner and prepare build orchestration
         shell: pwsh
         run: |
@@ -69,6 +76,12 @@ jobs:
           set "CONDA_CHANNEL_PRIORITY=strict"
           call conda index C:\gi-local
           if errorlevel 1 exit /b 1
+          if "${{ matrix.subdir }}" == "win-arm64" (
+            call conda build prerequisites\winflexbison\recipe -m prerequisites\winflexbison\.ci_support\win_arm64_.yaml --croot C:\winflex-build --output-folder C:\gi-local --override-channels -c conda-forge
+            if errorlevel 1 exit /b 1
+            call conda index C:\gi-local
+            if errorlevel 1 exit /b 1
+          )
           call conda build recipe -m .ci_support\${{ matrix.config }}.yaml --croot C:\gi-build --output-folder C:\gi-output --override-channels -c file:///C:/gi-local -c conda-forge ${{ matrix.extra_channel }}
           if errorlevel 1 exit /b 1
       - name: Preserve packages
@@ -76,5 +89,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: gi-${{ matrix.config }}
-          path: C:\gi-output\${{ matrix.subdir }}\*.conda
+          path: |
+            C:\gi-output\${{ matrix.subdir }}\*.conda
+            C:\gi-local\${{ matrix.subdir }}\winflexbison-*.conda
           if-no-files-found: warn
